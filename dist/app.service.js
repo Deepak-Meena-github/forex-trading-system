@@ -37,7 +37,6 @@ let AppService = class AppService {
                     }
                 }
                 const response = await axios_1.default.get(`https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency=${currencyPair.split('-')[0]}&to_currency=${currencyPair.split('-')[1]}&apikey=MVMTWELWDVXO1DXO`);
-                console.log(response.data, "Deepak");
                 const exchangeRate = response.data['Realtime Currency Exchange Rate']['5. Exchange Rate'];
                 const expiryAt = currentTime + 30 * 60 * 1000;
                 exchangeRatesMap.set(currencyPair, { rate: parseFloat(exchangeRate), expiryAt });
@@ -71,7 +70,6 @@ let AccountService = class AccountService {
         this.balances[id][currency] += amount;
     }
     getBalance(id) {
-        console.log(this.balances[id], "Deepak");
         return { balances: this.balances[id] };
     }
 };
@@ -102,7 +100,6 @@ let FxConversionService = class FxConversionService {
             exchangeRated = amount * parseFloat(exchangeRate);
         }
         const convertedAmount = exchangeRated * amount;
-        console.log(convertedAmount, "Deepak", exchangeRated, amount);
         return { convertedAmount, currency: toCurrency };
     }
 };

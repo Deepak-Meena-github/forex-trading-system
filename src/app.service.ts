@@ -15,12 +15,7 @@ setTimeout(() => {
 @Injectable()
 export class AppService {
   
-  // private exchangeRatesMap: Map<string, { rate: number, expiryAt: number }> = new Map();
-
-  // Set to store supported currency pairs
-  // getWelcome(id: string) {
-  //   return { message: 'Welcome to My website' };
-  // }
+  
   private supportedPairs: Set<string> = new Set(['USD-EUR', 'USD-GBP', 'EUR-USD', 'EUR-GBP', 'GBP-USD', 'GBP-EUR']);
 
   async getExchangeRates(): Promise<{ [key: string]: { rate: number, expiryAt: string } }> {
@@ -30,11 +25,11 @@ export class AppService {
     // Iterate over supported currency pairs and fetch exchange rates
     for (const currencyPair of this.supportedPairs) {
       try {
-        // Check if the exchange rate is already in the map and not expired
+        // Checked if the exchange rate is already in the map and not expired
         if (exchangeRatesMap.has(currencyPair)) {
           const { rate, expiryAt } = exchangeRatesMap.get(currencyPair);
           if (expiryAt > currentTime) {
-            const formattedExpiryAt = new Date(expiryAt * 1000).toLocaleString(); // Convert timestamp to a human-readable format
+            const formattedExpiryAt = new Date(expiryAt * 1000).toLocaleString(); // Converted  timestamp to a human-readable format
             exchangeRates[currencyPair] = { rate, expiryAt: formattedExpiryAt };
             continue;
           }
@@ -42,20 +37,20 @@ export class AppService {
 
         // Fetch the exchange rate from the API
         const response = await axios.get(`https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency=${currencyPair.split('-')[0]}&to_currency=${currencyPair.split('-')[1]}&apikey=MVMTWELWDVXO1DXO`);
-   console.log(response.data,"Deepak");
-        // Extract the exchange rate and expiration time from the response
+  //  console.log(response.data,"Deepak");
+        // Extracted the exchange rate and expiration time from the response
         const exchangeRate = response.data['Realtime Currency Exchange Rate']['5. Exchange Rate'];
         const expiryAt = currentTime + 30*60*1000; // Assuming the exchange rate is valid for 30 seconds
 
-        // Store the exchange rate and expiration time in the map
+        // Stored the exchange rate and expiration time in the map
         exchangeRatesMap.set(currencyPair, { rate: parseFloat(exchangeRate), expiryAt });
 
-        const formattedExpiryAt = new Date(expiryAt * 1000).toLocaleString(); // Convert timestamp to a human-readable format
+        const formattedExpiryAt = new Date(expiryAt * 1000).toLocaleString(); // Converted  timestamp to a human-readable format
         exchangeRates[currencyPair] = { rate: parseFloat(exchangeRate), expiryAt: formattedExpiryAt };
       } catch (error) {
         console.error(`Error fetching exchange rate for ${currencyPair}:`, error.message);
-        // Handle the error gracefully, such as setting a default rate or skipping this currency pair
-        // You can also rethrow the error to propagate it to the caller if needed
+        // Handled the error gracefully, such as setting a default rate or skipping this currency pair
+        
       }
     }
 
@@ -78,14 +73,12 @@ export class AccountService {
     this.balances[id][currency] += amount;
   }
   getBalance(id: string) {
-    console.log(this.balances[id],"Deepak");
+    // console.log(this.balances[id],"Deepak");
     return { balances: this.balances[id] };
   }
 }
 
-// FxConversionService (fx-conversion.service.ts)
 
-// Import AccountService
 
 @Injectable()
 export class FxConversionService {
@@ -94,7 +87,7 @@ export class FxConversionService {
   async performConversion(conversionDto: FxConversionDto): Promise<{ convertedAmount: number, currency: string }> {
     const { fromCurrency, toCurrency, amount } = conversionDto;
     
-    // Construct the currency pair key
+    // Constructed the currency pair key
     const currencyPair = `${fromCurrency}-${toCurrency}`;
     const currencyPairExists = exchangeRatesMap.has(currencyPair);
     let exchangeRated;
@@ -111,7 +104,7 @@ export class FxConversionService {
       const response = await axios.get(`https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency=${currencyPair.split('-')[0]}&to_currency=${currencyPair.split('-')[1]}&apikey=MVMTWELWDVXO1DXO`);
       const exchangeRate = response.data['Realtime Currency Exchange Rate']['5. Exchange Rate'];
       const currentTime = Math.floor(Date.now() / 1000);
-        const expiryAt = currentTime + 30*60*1000; // Assuming the exchange rate is valid for 30 seconds
+        const expiryAt = currentTime + 30*60*1000; // Assuming the exchange rate is valid for 30 Mint
 
         // Store the exchange rate and expiration time in the map
         exchangeRatesMap.set(currencyPair, { rate: parseFloat(exchangeRate), expiryAt });
@@ -127,7 +120,7 @@ export class FxConversionService {
 
     // Perform the conversion
      const convertedAmount = exchangeRated*amount;
-     console.log(convertedAmount,"Deepak",exchangeRated,amount);
+    //  console.log(convertedAmount,"Deepak",exchangeRated,amount);
 
     return { convertedAmount, currency: toCurrency };
   }
