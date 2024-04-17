@@ -6,7 +6,7 @@ import { FxConversionDto } from './dto/FxConversion.dto';
 const exchangeRatesMap: Map<string, { rate: number, expiryAt: number }> = new Map();
 setTimeout(() => {
   Array.from(exchangeRatesMap.keys()).forEach(currencyPair => {
-    axios.get(`https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency=${currencyPair.split('-')[0]}&to_currency=${currencyPair.split('-')[1]}&apikey=IHSEGOVOAAS2P7FR`)
+    axios.get(`https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency=${currencyPair.split('-')[0]}&to_currency=${currencyPair.split('-')[1]}&apikey=MVMTWELWDVXO1DXO`)
     .then(response => {exchangeRatesMap[currencyPair] = response.data['Realtime Currency Exchange Rate']['5. Exchange Rate'];})
   });
 
@@ -18,6 +18,9 @@ export class AppService {
   // private exchangeRatesMap: Map<string, { rate: number, expiryAt: number }> = new Map();
 
   // Set to store supported currency pairs
+  // getWelcome(id: string) {
+  //   return { message: 'Welcome to My website' };
+  // }
   private supportedPairs: Set<string> = new Set(['USD-EUR', 'USD-GBP', 'EUR-USD', 'EUR-GBP', 'GBP-USD', 'GBP-EUR']);
 
   async getExchangeRates(): Promise<{ [key: string]: { rate: number, expiryAt: string } }> {
@@ -93,19 +96,38 @@ export class FxConversionService {
     
     // Construct the currency pair key
     const currencyPair = `${fromCurrency}-${toCurrency}`;
+    const currencyPairExists = exchangeRatesMap.has(currencyPair);
+    let exchangeRated;
+    if (currencyPairExists) {
+      // Currency pair is present in the map
+      const { rate, expiryAt } = exchangeRatesMap.get(currencyPair);
+       exchangeRated = amount * rate;
+      console.log(`${currencyPair} exists in the exchange rates map.`);
+     
+      
+    } else {
+      // Currency pair is not present in the map
 
-    // Retrieve exchange rate from AppService
-    const exchangeRateData =await this.appService.getExchangeRates();
-    console.log(exchangeRateData,"Deepak");
+      const response = await axios.get(`https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency=${currencyPair.split('-')[0]}&to_currency=${currencyPair.split('-')[1]}&apikey=MVMTWELWDVXO1DXO`);
+      const exchangeRate = response.data['Realtime Currency Exchange Rate']['5. Exchange Rate'];
+      const currentTime = Math.floor(Date.now() / 1000);
+        const expiryAt = currentTime + 30*60*1000; // Assuming the exchange rate is valid for 30 seconds
 
-    if (!exchangeRateData) {
-      throw new Error(`Exchange rate data not found for ${currencyPair}`);
+        // Store the exchange rate and expiration time in the map
+        exchangeRatesMap.set(currencyPair, { rate: parseFloat(exchangeRate), expiryAt });
+         exchangeRated = amount * parseFloat(exchangeRate);
+         
     }
+    // Retrieve exchange rate from AppService
+   
 
-    const { rate } = exchangeRateData[currencyPair] || { rate: 1 }; // Default to 1:1 conversion if rate not found
+    
+
+      // Default to 1:1 conversion if rate not found
 
     // Perform the conversion
-    const convertedAmount = amount * rate;
+     const convertedAmount = exchangeRated*amount;
+     console.log(convertedAmount,"Deepak",exchangeRated,amount);
 
     return { convertedAmount, currency: toCurrency };
   }

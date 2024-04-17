@@ -21,11 +21,20 @@ let AppController = class AppController {
     constructor(appService) {
         this.appService = appService;
     }
+    getHello() {
+        return "Hello World";
+    }
     getExchangeRate() {
         return this.appService.getExchangeRates();
     }
 };
 exports.AppController = AppController;
+__decorate([
+    (0, common_1.Get)('/'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", String)
+], AppController.prototype, "getHello", null);
 __decorate([
     (0, common_1.Get)('/fx-rates'),
     __metadata("design:type", Function),

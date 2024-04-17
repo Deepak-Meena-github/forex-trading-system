@@ -15,7 +15,7 @@ const axios_1 = require("axios");
 const exchangeRatesMap = new Map();
 setTimeout(() => {
     Array.from(exchangeRatesMap.keys()).forEach(currencyPair => {
-        axios_1.default.get(`https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency=${currencyPair.split('-')[0]}&to_currency=${currencyPair.split('-')[1]}&apikey=IHSEGOVOAAS2P7FR`)
+        axios_1.default.get(`https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency=${currencyPair.split('-')[0]}&to_currency=${currencyPair.split('-')[1]}&apikey=MVMTWELWDVXO1DXO`)
             .then(response => { exchangeRatesMap[currencyPair] = response.data['Realtime Currency Exchange Rate']['5. Exchange Rate']; });
     });
 }, 30 * 60 * 1000);
@@ -86,13 +86,23 @@ let FxConversionService = class FxConversionService {
     async performConversion(conversionDto) {
         const { fromCurrency, toCurrency, amount } = conversionDto;
         const currencyPair = `${fromCurrency}-${toCurrency}`;
-        const exchangeRateData = await this.appService.getExchangeRates();
-        console.log(exchangeRateData, "Deepak");
-        if (!exchangeRateData) {
-            throw new Error(`Exchange rate data not found for ${currencyPair}`);
+        const currencyPairExists = exchangeRatesMap.has(currencyPair);
+        let exchangeRated;
+        if (currencyPairExists) {
+            const { rate, expiryAt } = exchangeRatesMap.get(currencyPair);
+            exchangeRated = amount * rate;
+            console.log(`${currencyPair} exists in the exchange rates map.`);
         }
-        const { rate } = exchangeRateData[currencyPair] || { rate: 1 };
-        const convertedAmount = amount * rate;
+        else {
+            const response = await axios_1.default.get(`https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency=${currencyPair.split('-')[0]}&to_currency=${currencyPair.split('-')[1]}&apikey=MVMTWELWDVXO1DXO`);
+            const exchangeRate = response.data['Realtime Currency Exchange Rate']['5. Exchange Rate'];
+            const currentTime = Math.floor(Date.now() / 1000);
+            const expiryAt = currentTime + 30 * 60 * 1000;
+            exchangeRatesMap.set(currencyPair, { rate: parseFloat(exchangeRate), expiryAt });
+            exchangeRated = amount * parseFloat(exchangeRate);
+        }
+        const convertedAmount = exchangeRated * amount;
+        console.log(convertedAmount, "Deepak", exchangeRated, amount);
         return { convertedAmount, currency: toCurrency };
     }
 };

@@ -2,11 +2,15 @@ import { Controller, Get,Post,Body, Param } from '@nestjs/common';
 import { AppService, AccountService,FxConversionService } from './app.service';
 import { AccountDtO } from './dto/Account.dto';
 import { FxConversionDto } from './dto/FxConversion.dto';
+import { get } from 'http';
 
 @Controller()
 export class AppController {
   constructor(private readonly appService: AppService) {}
-
+  @Get('/')
+  getHello(): string {
+    return "Hello World";
+  }
   @Get('/fx-rates')
   getExchangeRate() {
     return this.appService.getExchangeRates();
@@ -37,4 +41,5 @@ export class FxConversionController {
     return this.fxConversionService.performConversion(conversionDto);
   }
 }
+
 
