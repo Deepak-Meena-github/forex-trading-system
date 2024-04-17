@@ -18,7 +18,7 @@ setTimeout(() => {
         axios_1.default.get(`https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency=${currencyPair.split('-')[0]}&to_currency=${currencyPair.split('-')[1]}&apikey=MVMTWELWDVXO1DXO`)
             .then(response => { exchangeRatesMap[currencyPair] = response.data['Realtime Currency Exchange Rate']['5. Exchange Rate']; });
     });
-}, 30 * 60 * 1000);
+}, 30 * 1000);
 let AppService = class AppService {
     constructor() {
         this.supportedPairs = new Set(['USD-EUR', 'USD-GBP', 'EUR-USD', 'EUR-GBP', 'GBP-USD', 'GBP-EUR']);
@@ -38,7 +38,7 @@ let AppService = class AppService {
                 }
                 const response = await axios_1.default.get(`https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency=${currencyPair.split('-')[0]}&to_currency=${currencyPair.split('-')[1]}&apikey=MVMTWELWDVXO1DXO`);
                 const exchangeRate = response.data['Realtime Currency Exchange Rate']['5. Exchange Rate'];
-                const expiryAt = currentTime + 30 * 60 * 1000;
+                const expiryAt = currentTime + 30 * 1000;
                 exchangeRatesMap.set(currencyPair, { rate: parseFloat(exchangeRate), expiryAt });
                 const formattedExpiryAt = new Date(expiryAt * 1000).toLocaleString();
                 exchangeRates[currencyPair] = { rate: parseFloat(exchangeRate), expiryAt: formattedExpiryAt };
@@ -94,10 +94,16 @@ let FxConversionService = class FxConversionService {
         else {
             const response = await axios_1.default.get(`https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency=${currencyPair.split('-')[0]}&to_currency=${currencyPair.split('-')[1]}&apikey=MVMTWELWDVXO1DXO`);
             const exchangeRate = response.data['Realtime Currency Exchange Rate']['5. Exchange Rate'];
+            if (!exchangeRate) {
+                throw new Error('something went wrong');
+            }
             const currentTime = Math.floor(Date.now() / 1000);
-            const expiryAt = currentTime + 30 * 60 * 1000;
+            const expiryAt = currentTime + 30 * 1000;
             exchangeRatesMap.set(currencyPair, { rate: parseFloat(exchangeRate), expiryAt });
             exchangeRated = amount * parseFloat(exchangeRate);
+        }
+        if (exchangeRated == undefined) {
+            throw new Error('Invalid currency pair or amount provided. Please check the currency pair and try again.or may Be Currency Pair Not Found in the API');
         }
         const convertedAmount = exchangeRated * amount;
         return { convertedAmount, currency: toCurrency };
